@@ -1,38 +1,35 @@
-import {Bar} from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import axios from 'axios';
 import Loading from '../LoadingAnimation/smallLoadingAnimation'
 import React from 'react'
-// import delayer from '../Misc/delayer'
 
-// import JSONPretty from 'react-json-pretty';
-
-import {colors2} from "../Colors/colors.js"
+import { colors2 } from "../Colors/colors.js"
 
 export default function BarChart(DParameter) {
 
      var MyData = DParameter.DataParameter
-     
-     // let OnClickAct = DParameter.OnClickActions;
 
      var NumOfQueues
-     var QNames = []
+     var QNames
 
      const [QDataState, setQDataState] = React.useState([])
 
      const [isLoading, setLoading] = React.useState(true)
 
-     function getCount(z) {
-          return z.length
+     function getCount(para) {
+          return para.length
      }
 
      function step1Fun() {
           return new Promise((resolve, reject) => {
-               NumOfQueues = MyData.length
-               console.log("MyData",MyData)
+               // Initialize QDataState to Empty Array
+               setQDataState(QDataState => [])
+               NumOfQueues = getCount(MyData)
+               console.log("Chart2 :: Step 1 :: NumOfQueues", NumOfQueues)
                resolve("Step 1 Done")
           })
      }
-     
+
      function step2Fun() {
           return new Promise((resolve, reject) => {
                let temp = []
@@ -40,138 +37,106 @@ export default function BarChart(DParameter) {
                     temp.push(MyData[i].name);
                }
                QNames = temp
+               console.log("Chart2 :: Step 2 :: QNames", QNames)
                resolve("Step 2 Done")
-          })                
+          })
      }
 
      async function setQDataStateFun(para) {
-          console.log("Pushing result of Object Maker to the state")
+          // console.log("Pushing result of Object Maker to the state")
           setQDataState(QDataState => [...QDataState, para])
           setLoading(false)
      }
-     
-     async function makeObject(para, res) {
-          console.log("Object Maker Started")
+
+     async function makeObject(res, para) {
+          // console.log("Object Maker Started")
           let RTC = 0
           var tempObject = {}
           tempObject.QName = para
-          tempObject.Data = res.data
-          for (let j = 0; j < getCount(res.data); j++) {
-               if (res.data[j].MessageAttributes.isMsgRetriable.StringValue === "Yes") {
-                    RTC = RTC + 1
-               }
+          tempObject.Data = res.data.firstTenMessages
+          // console.log("Look here", res, para)
+          for (let j = 0; j < getCount(res.data.firstTenMessages); j++) {
+               RTC = RTC + Number(res.data.firstTenMessages[j].messageAttributes.retryCount.stringValue)
           }
-          tempObject.RetriableCount = RTC
-          console.log("Object Maker Finished")
+          tempObject.RetryCount = RTC
+          // console.log("Object Maker Finished", tempObject)
           await setQDataStateFun(tempObject)
      }
 
+     let muleGetQueueMessages = "http://localhost:8081/Queue/"
+
      async function callingAxios(para) {
-          const res = await axios.get('http://localhost:5000/Queue/' + para)
-          console.log("Axios Request Done, Now calling Object Maker")
-          await makeObject(para, res)
+          const res = await axios.get(muleGetQueueMessages + para)
+          // console.log("Axios Request Done, Now calling Object Maker")
+          await makeObject(res, para)
      }
 
      async function startingLoop(para, num) {
           for (let i = 0; i < num; i++) {
-               console.log("Calling Axios Function for ", para[i])
+               // console.log("Calling Axios Function for ", para[i])
                callingAxios(para[i]); // Just add await in front of it to make axios requests sequential
           }
      }
 
      function step3Fun() {
           return new Promise((resolve, reject) => {
-               console.log("Step 3 Started")
                startingLoop(QNames, NumOfQueues)
-               // for (let i = 0; i < NumOfQueues; i++) {
-               //      callingAxios(QNames[i]);
-               // }       
                resolve("Step 3 Done")
-          })
-     } 
-
-     function step4Fun() {
-          return new Promise((resolve, reject) => {
-               // setLoading(false)
-               resolve("Step 4 Done")
           })
      }
 
      async function doWork() {
-          const response1 = await step1Fun()
-          console.log("Chart2:",response1)
-          const response2 = await step2Fun()
-          console.log("Chart2:",response2)
-          const response3 = await step3Fun()
-          console.log("Chart2:",response3)
-          const response4 = await step4Fun()
-          console.log("Chart2:",response4)
+          await step1Fun()
+          await step2Fun()
+          await step3Fun()
      }
 
-     React.useEffect(()=>{
+     React.useEffect(() => {
           doWork()
-     },[])
-     
+     }, [])
+
      // Preparing Color Palette for Chart as per number of queues.
      let colorp = [];
      let limit = 1;
      if (MyData.length <= 9) limit = 1;
+     // Feel free to use the code below if you are going to use "colors" array from "color.js" but remember the 2D array size for that is different. But as of now, we are using "colors2" array.
      // else if (MyData.length <= 8) limit = 2;
      // else if (MyData.length <= 12) limit = 3;
      // else if (MyData.length <= 16) limit = 4;
      // else if (MyData.length <= 20) limit = 5;
      else if (MyData.length <= 18 & MyData.length > 18) limit = 2;
-     
-     for ( let i = 0; i < colors2.length; i++ ) {
-          for ( let j = 0 ; j < limit ; j++ ) {
+
+     for (let i = 0; i < colors2.length; i++) {
+          for (let j = 0; j < limit; j++) {
                colorp.push(colors2[i][j]);
           }
      }
-     // console.log("Current Color Palette From Main Page Chart 2: ",colorp);
+     // console.log("Current Color Palette From Main Page Chart 2: ", colorp);
 
      return (
 
           (isLoading === true)
-          ?
-          <Loading />
-          :
-          <>
-          {console.log("QDataState",QDataState)}
-          {/* <div className = "div-1"><JSONPretty data = {QDataState}/></div> */}
-          <Bar
-               data = {{
-                    labels: QDataState.sort((a,b)=>a.QName.localeCompare(b.QName)).map((it,key)=>(it.QName)),
-                    datasets: [{
-                         label: "Number of Messages Retriable",
-                         data: QDataState.sort((a,b)=>a.QName.localeCompare(b.QName)).map((it,key)=>(it.RetriableCount)),
-                         backgroundColor: colorp,
-                    
-                         borderColor: colorp,
-                         borderWidth: 0.5,
-                    },],
-               }}
-               // Height of graph
-               // height = {400}
-               options = {{
-                    maintainAspectRatio: false,
-                    scales: {
-                    // yAxes: [{
-                    //           ticks: {                              
-                    //                beginAtZero: true,
-                    //           },
-                    //      },],
-                    },
-                    legend: {
-                    // labels: {
-                    //      fontSize: 15,
-                    //      },
-                    },
-                    // events: ['click'],
-                    onClick:  {function (evt) {{console.log("evt",evt)}}}
-                    
-               }}
-		/>
-          </>
+               ?
+               <Loading />
+               :
+               <>
+                    {console.log("Chart2 :: Step 3 :: QDataState", QDataState)}
+                    <Bar
+                         data={{
+                              labels: QDataState.sort((a, b) => a.QName.localeCompare(b.QName)).map((it, key) => (it.QName)),
+                              datasets: [{
+                                   label: "Retry Count (Based on first 10 messages)",
+                                   data: QDataState.sort((a, b) => a.QName.localeCompare(b.QName)).map((it, key) => (it.RetryCount)),
+                                   backgroundColor: colorp,
+                                   borderColor: colorp,
+                                   borderWidth: 0.5,
+                              },],
+                         }}
+                         options={{
+                              maintainAspectRatio: false
+                         }}
+                    />
+               </>
 
      )
 }

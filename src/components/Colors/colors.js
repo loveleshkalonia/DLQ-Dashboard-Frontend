@@ -1,5 +1,4 @@
 //Source: https://carbondesignsystem.com/data-visualization/color-palettes
-
 export const colors = [
      [
           '#da1e28',     // red dark
@@ -38,7 +37,7 @@ export const colors = [
 //Source: https://material.io/resources/color/
 export const colors2 = [
      [    //Red
-          '#d50000',   
+          '#d50000',
           '#ff8a80',
      ],
      [    //Purple

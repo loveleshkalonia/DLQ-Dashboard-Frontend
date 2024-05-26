@@ -9,6 +9,9 @@ npm start
 Python
 ==========
 
+sudo apt install python3-pip
+sudo apt install python3-venv
+
 python3 -m venv .venv
 . .venv/bin/activate
 
@@ -16,4 +19,3 @@ python3 -m pip install boto3
 pip install -U Flask
 pip install -U flask-cors
 python3 app.py
-

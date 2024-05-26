@@ -1,6 +1,5 @@
-// import LoadingSpin from "react-loading-spin"; // npm install react-loading-spin
 import Navbar from '../Navbar/navbar';
-import {Progress, Card, CardBody, Placeholder} from 'reactstrap'
+import { Progress, Card, CardBody, Placeholder } from 'reactstrap'
 
 export default function loadingFun() {
 
@@ -16,9 +15,9 @@ export default function loadingFun() {
      const divspace = {
           width: '10px'
      }
-     
+
      return (
-          <>   
+          <>
                <Navbar />
                <Progress
                     animated
@@ -73,8 +72,8 @@ export default function loadingFun() {
                               </Placeholder>
                          </CardBody>
                     </Card>
-                    </div>
-</>
+               </div>
+          </>
      )
 
 }
