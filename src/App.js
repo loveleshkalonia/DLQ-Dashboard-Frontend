@@ -67,7 +67,11 @@ function App() {
   const [myData, setData] = React.useState([{}])
   const [isLoading, setLoading] = React.useState(true)
 
+  // ************************************************** BACKEND URLs **************************************************
+
   let muleGetActiveQueues = "http://localhost:8081/Queue/Active"
+
+  // ******************************************************************************************************************
 
   React.useEffect(() => {
     // Sending GET request and saving its response

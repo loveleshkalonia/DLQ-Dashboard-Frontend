@@ -16,6 +16,12 @@ export default function BarChart(DParameter) {
 
      const [isLoading, setLoading] = React.useState(true)
 
+     // ************************************************** BACKEND URLs **************************************************
+
+     let muleGetQueueMessages = "http://localhost:8081/Queue/"
+
+     // ******************************************************************************************************************
+
      function getCount(para) {
           return para.length
      }
@@ -62,8 +68,6 @@ export default function BarChart(DParameter) {
           // console.log("Object Maker Finished", tempObject)
           await setQDataStateFun(tempObject)
      }
-
-     let muleGetQueueMessages = "http://localhost:8081/Queue/"
 
      async function callingAxios(para) {
           const res = await axios.get(muleGetQueueMessages + para)

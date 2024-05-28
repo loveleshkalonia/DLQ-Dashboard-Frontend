@@ -46,6 +46,7 @@ export default function DoughNutChartq1(DParameter) {
                          c = c + 1
                }
                setfinal(final => [...final, { code: errorcode, count: c }])
+               resolve("Step Final Done")
           })
      }
 

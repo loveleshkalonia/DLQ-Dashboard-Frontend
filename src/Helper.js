@@ -127,9 +127,9 @@ export default class SQSMessagesList extends React.Component {
     MasterChecked: false,
     SelectedList: [],
 
-    qname: window.history.state.state.WindowVarQname,
+    qname: window.history.state.state.WindowVarQname, // From Interpage
     qcount: [],
-    // qcount: window.history.state.state.WindowVarQcount,
+
     Loaded: "Loading",
     refreshTimeout: 5000, // This will set the time (in ms) to wait before page is refreshed. Keep this greater than notiTimeout
     CopyButtonText: "Copy",
@@ -173,7 +173,7 @@ export default class SQSMessagesList extends React.Component {
         for (var i = 0, len = this.state.qmessages.length; i < len; ++i) {
           qmessagestemp[i]["selected"] = false;
         }
-        console.log("Queue", this.state.qname, "Approx Msg Count =", res.data.approxMsgCount);
+        console.log("Queue =", this.state.qname, "; Approx Msg Count =", res.data.approxMsgCount);
         this.setState({ qmessages: qmessagestemp, qcount: res.data.approxMsgCount });
       })
 
@@ -386,7 +386,7 @@ export default class SQSMessagesList extends React.Component {
                           <input
                             type="checkbox"
                             className="form-check-input"
-                            checked={this.state.MasterChecked}
+                            checked={this.state.MasterChecked || false}
                             id="mastercheck"
                             onChange={(e) => this.onMasterCheck(e)}
                           />
@@ -510,7 +510,7 @@ export default class SQSMessagesList extends React.Component {
                     Refreshes the above data
                   </UncontrolledTooltip>
 
-                  <Modal funk={true} isOpen={this.state.modaldelete} toggle={this.toggledelete}>
+                  <Modal funk isOpen={this.state.modaldelete} toggle={this.toggledelete}>
                     <ModalHeader toggle={this.toggledelete}>Delete</ModalHeader>
                     <ModalBody id="Delete">
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>
@@ -524,7 +524,7 @@ export default class SQSMessagesList extends React.Component {
                     </ModalFooter>
                   </Modal>
 
-                  <Modal funk={true} isOpen={this.state.modalpurge} toggle={this.togglepurge}>
+                  <Modal funk isOpen={this.state.modalpurge} toggle={this.togglepurge}>
                     <ModalHeader toggle={this.togglepurge}>Purge Queue</ModalHeader>
                     <ModalBody>
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>
@@ -539,7 +539,7 @@ export default class SQSMessagesList extends React.Component {
                     </ModalFooter>
                   </Modal>
 
-                  <Modal funk={true} isOpen={this.state.modalexport} toggle={this.toggleexport}>
+                  <Modal funk isOpen={this.state.modalexport} toggle={this.toggleexport}>
                     <ModalHeader toggle={this.toggleexport}>Export To Main Queue</ModalHeader>
                     <ModalBody id="Delete">
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>

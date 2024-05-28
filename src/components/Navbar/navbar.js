@@ -23,7 +23,6 @@ export default function ReactstrapNav() {
                     dark
                     expand
                     fixed="top"
-                    full
                >
                     <NavbarBrand href="/" onClick={() => { { browserHistory.push({ pathname: '/' }) }; window.location.reload() }}>
                          DLQ Dashboard

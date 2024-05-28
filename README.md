@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# DLQ-Dashboard-Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This React App is a Proof-of-Concept that visualizes AWS SQS Queues and enables a User to perform basic SQS operations like fetching, deleting, and exporting queue messages. To connect with the AWS SQS Service, it uses the [DLQ-Dashboard-Mule-Backend](https://github.com/loveleshkalonia/DLQ-Dashboard-Mule-Backend) Mule API.
 
-## Available Scripts
+In summary, this application features a Navigation Bar, a Home Page, and a Queue Page. Learn more about them below:
 
-In the project directory, you can run:
+## Navigation Bar
+
+Apart from the Title - "DLQ Dashboard" and Current Time (On the right), the Navigation Bar features a "Home" link to go back to the Home Page.
+
+## Home Page
+
+The first page of the DLQ Dashboard features two charts:
+
+### Approx Msg Count - Doughnut Chart
+
+Shows the approximate number of messages from every queue (DLQ). This graph is clickable and is used to navigate to the Queue Page.
+
+### Message Retry Count - Bar Chart
+
+Shows sum total of the retry count attribute (from the first 10 messages) from every queue (DLQ). This graph is not clickable.
+
+## Queue Page
+
+The second page consists of 4 sections:
+
+### Queue Name & Approx Msg Count
+
+Text block showing the name of the queue and the approximate number of messages in it.
+
+### Retriable Message Count - Doughnut Chart
+
+Shows the number of messages (from the first 10 messages) where the retriable attribute is true or false.
+
+### Error Code Count - Doughnut Chart
+
+Shows the number of messages (from the first 10 messages) for every unique value of the error code attribute.
+
+### First 10 Messages - Table & Buttons
+
+The body and attributes of the first 10 messages from the queue are displayed in a table here. There are checkboxes available for every message row to perform bulk operations. The message body can be viewed using the "View" button and copied using the "Copy" button on the small popup. Just below the table, there are 4 buttons - "Delete", "Purge", "Export to Main", and "Refresh Page". The "Delete" and "Export to Main" buttons work in conjunction with the checkboxes. The "Purge" button will delete all messages from the queue, and the "Refresh Page" is to simply reload the page.\
+The "Delete", "Purge", and "Export to Main" buttons are tied to a confirmation popup before performing the operation to prevent accidents.
+
+# Code Setup
+
+After cloning the repo, open terminal in the project directory and run:
+
+### `npm install`
+
+This will download and install all dependencies of the project in the ./node_modules folder. After this, you can run the project with the next command.
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Once the dependencies are all downloaded, run this command to start the App in development mode.\
+Go to [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Press `F12` in the browser to check the console logs.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Make sure that the Mule API is also running so that the functions can make calls and populate various sections of the App or else you will keep seeing infinite loading screens.
+___
 
-### `npm test`
+### Disclaimer:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This code is my first attempt at Frontend development and React. It is very likely that this code is not up to the best coding standards and practices. Also, this code has never seen deployment, you may or may not encounter issues during deployment.\
+I am open to receiving feedback/suggestions to polish this code further and learn more.
