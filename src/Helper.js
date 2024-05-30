@@ -11,13 +11,18 @@ import QueuePageChart1 from './components/Charts/queuePageChart-1'
 import QueuePageChart2 from './components/Charts/queuePageChart-2'
 import JSONPretty from 'react-json-pretty'; // npm install --save react-json-pretty
 
+// npm install @mui/joy @emotion/react @emotion/styled
+import Box from '@mui/joy/Box';
+import Radio from '@mui/joy/Radio';
+import RadioGroup from '@mui/joy/RadioGroup';
+import Sheet from '@mui/joy/Sheet';
+
 import {
   Card, CardTitle, Table, Badge, Button,
   UncontrolledPopover, PopoverHeader, PopoverBody,
   ModalHeader, ModalBody, ModalFooter, Modal,
   UncontrolledTooltip
 } from 'reactstrap'
-
 
 const divstyleparent = {
   display: 'flex',
@@ -102,7 +107,11 @@ const purgeRequestNotify = () => {
   toast.success("Queue Purged Successfully! Refreshing Page...", { position: toast.POSITION.TOP_CENTER, autoClose: notiTimeout })
 }
 
-const exportToMainRequestNotify = () => {
+const nowhereToExportNotify = () => {
+  toast.warn("No Destination Queue Available", { position: toast.POSITION.TOP_CENTER, autoClose: notiTimeout })
+}
+
+const exportToDestRequestNotify = () => {
   toast.success("Selected Items Exported Successfully! Refreshing Page...", { position: toast.POSITION.TOP_CENTER, autoClose: notiTimeout })
 }
 
@@ -112,11 +121,11 @@ const actionFailedNotify = () => {
 
 // ************************************************** BACKEND URLs **************************************************
 
+var muleGetActiveQueues = "http://localhost:8081/Queue/Active"
 var muleGetQueueMessages = "http://localhost:8081/Queue/"
 var mulePurgeQueue = "http://localhost:8081/Queue/Purge/"
 var muleDeleteQueueMessages = "http://localhost:8081/Queue/Delete/"
 var muleTransferQueueMessages = "http://localhost:8081/Queue/Transfer/"
-var mainQueueName = "main-dlq.fifo"
 
 // ******************************************************************************************************************
 
@@ -126,6 +135,9 @@ export default class SQSMessagesList extends React.Component {
     qmessages: [],
     MasterChecked: false,
     SelectedList: [],
+
+    SelectedDestQueue: "",
+    PossibleDestQueueNames: [],
 
     qname: window.history.state.state.WindowVarQname, // From Interpage
     qcount: [],
@@ -138,6 +150,12 @@ export default class SQSMessagesList extends React.Component {
     modalpurge: false,
     modalexport: false,
   }
+
+  handleRadioChange = (event) => {
+    this.setState({
+      SelectedDestQueue: (event.target.value)
+    });
+  };
 
   toggledelete = () => {
     this.setState({
@@ -152,9 +170,14 @@ export default class SQSMessagesList extends React.Component {
   }
 
   toggleexport = () => {
-    this.setState({
-      modalexport: !this.state.modalexport
-    });
+    if(this.state.PossibleDestQueueNames.length>0) {
+      this.setState({
+        modalexport: !this.state.modalexport
+      });
+    }
+    else {
+      nowhereToExportNotify();
+    }
   }
 
   CopyButtonTextFun() {
@@ -165,7 +188,8 @@ export default class SQSMessagesList extends React.Component {
   }
 
   fetchData() {
-    this.setState({ qmessages: [] });
+    this.setState({ qmessages: [], PossibleDestQueueNames: [] });
+
     let a = axios.get(muleGetQueueMessages + this.state.qname)
       .then(res => {
         const qmessagestemp = res.data.firstTenMessages;
@@ -177,7 +201,18 @@ export default class SQSMessagesList extends React.Component {
         this.setState({ qmessages: qmessagestemp, qcount: res.data.approxMsgCount });
       })
 
-    Promise.all([a])
+    let b = axios.get(muleGetActiveQueues)
+      .then(res => {
+        const PossibleDestQueueNamesData = res.data
+        let PossibleDestArrayTemp = []
+        for (let index = 0; index < PossibleDestQueueNamesData.length; index++) {
+          if(PossibleDestQueueNamesData[index].name !== this.state.qname) // Excluding Current Queue From Possible Destinations
+            PossibleDestArrayTemp.push(PossibleDestQueueNamesData[index].name)            
+        }
+        this.setState({ PossibleDestQueueNames: PossibleDestArrayTemp, SelectedDestQueue: PossibleDestArrayTemp[0] }) // Setting Possible Destination Queues & Default Destination Queue
+      })
+
+    Promise.all([a, b])
       .then(() => { this.setState({ Loaded: "Loaded" }); })
   }
 
@@ -229,7 +264,7 @@ export default class SQSMessagesList extends React.Component {
     });
   }
 
-  Transfer_to_main(messages) {
+  Transfer_to_dest(messages, destQueue) {
     requestSentNotify();
     const message_ids = [];
     console.log("Messages Export", messages)
@@ -241,17 +276,16 @@ export default class SQSMessagesList extends React.Component {
     // Pass the array of message ids to endpoint which is dybamically generated
     axios({
       method: "post",
-      url: muleTransferQueueMessages + "?srcQueue=" + this.state.qname + "&destQueue=" + mainQueueName,
+      url: muleTransferQueueMessages + "?srcQueue=" + this.state.qname + "&destQueue=" + this.state.SelectedDestQueue,
       data: message_ids,
       headers: { "Content-Type": "application/json" },
     })
       .then(response => {
-        console.log(response);
         //handle success
         if (
           (response.data.deleteFromSrcQueue.successful.length === message_ids.length) &&
           (response.data.sendToDestQueue.successful.length === message_ids.length)
-        ) { exportToMainRequestNotify(); this.afterToast(); }
+        ) { exportToDestRequestNotify(); this.afterToast(); }
         //handle error
         else { actionFailedNotify(); }
       })
@@ -314,7 +348,6 @@ export default class SQSMessagesList extends React.Component {
         <div style={divstyleparent} >
           <div style={divstyle}>
             <ToastContainer />
-            {console.log("Rendering Class Component")}
             <div style={recenter}>
               <Card
                 body
@@ -411,7 +444,7 @@ export default class SQSMessagesList extends React.Component {
                           <td>
                             <input
                               type="checkbox"
-                              checked={user.selected}
+                              checked={user.selected || false}
                               className="form-check-input"
                               id="rowcheck{user.id}"
                               onChange={(e) => this.onItemCheck(e, user)}
@@ -486,7 +519,7 @@ export default class SQSMessagesList extends React.Component {
                   <Button id="Export" color='primary' onClick={() => {
                     if (this.state.SelectedList.length !== 0) this.toggleexport()
                     else nothingSelectedNotify()
-                  }}>Export to Main</Button>
+                  }}>Export</Button>
 
                   <div style={divspace}></div>
 
@@ -503,14 +536,14 @@ export default class SQSMessagesList extends React.Component {
                   </UncontrolledTooltip>
 
                   <UncontrolledTooltip autohide={false} target="Export">
-                    Moves selected message(s) to the main queue
+                    Moves selected message(s) to a destination queue
                   </UncontrolledTooltip>
 
                   <UncontrolledTooltip autohide={false} target="Refresh">
                     Refreshes the above data
                   </UncontrolledTooltip>
 
-                  <Modal funk isOpen={this.state.modaldelete} toggle={this.toggledelete}>
+                  <Modal isOpen={this.state.modaldelete} toggle={this.toggledelete}>
                     <ModalHeader toggle={this.toggledelete}>Delete</ModalHeader>
                     <ModalBody id="Delete">
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>
@@ -524,7 +557,7 @@ export default class SQSMessagesList extends React.Component {
                     </ModalFooter>
                   </Modal>
 
-                  <Modal funk isOpen={this.state.modalpurge} toggle={this.togglepurge}>
+                  <Modal isOpen={this.state.modalpurge} toggle={this.togglepurge}>
                     <ModalHeader toggle={this.togglepurge}>Purge Queue</ModalHeader>
                     <ModalBody>
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>
@@ -539,15 +572,69 @@ export default class SQSMessagesList extends React.Component {
                     </ModalFooter>
                   </Modal>
 
-                  <Modal funk isOpen={this.state.modalexport} toggle={this.toggleexport}>
-                    <ModalHeader toggle={this.toggleexport}>Export To Main Queue</ModalHeader>
+                  <Modal isOpen={this.state.modalexport} toggle={this.toggleexport}>
+                    {console.log("Possible Destinations = ", this.state.PossibleDestQueueNames)}
+                    <ModalHeader toggle={this.toggleexport}>Export</ModalHeader>
                     <ModalBody id="Delete">
                       <font color={'#d50000'}><b>WARNING:</b> You can't undo this action.</font><br></br>
-                      Proceed to move selected message(s) to the main queue?<br></br>
-                      <b>{this.state.SelectedList.length}</b> message(s) selected.
+                      Choose destination queue:<br></br>
+
+                      <Box sx={{ width: "auto", mt: 1.5, mb: 1.5 }}>
+                        <RadioGroup
+                          aria-labelledby="storage-label"
+                          size="md"
+                          sx={{ gap: 1.5 }}
+                          onChange={this.handleRadioChange}
+                          defaultValue={this.state.PossibleDestQueueNames[0]}
+                        >
+                          {console.log("Current Destination Queue Selection =", this.state.SelectedDestQueue)}
+                          {this.state.PossibleDestQueueNames.map((value) => (
+                            <Sheet
+                              key={value}
+                              sx={{
+                                p: 2,
+                                borderRadius: 'md'
+                              }}
+                            >
+                              <center><Radio
+                                label={`${value}`}
+                                overlay
+                                disableIcon
+                                value={value}
+                                slotProps={{
+                                  label: ({ checked }) => ({
+                                    sx: {
+                                      fontWeight: 'lg',
+                                      fontSize: 'md',
+                                      color: checked ? 'text.primary' : 'text.secondary',
+                                    },
+                                  }),
+                                  action: ({ checked }) => ({
+                                    sx: (theme) => ({
+                                      ...(checked && {
+                                        '--variant-borderWidth': '2px',
+                                        '&&': {
+                                          // && to increase the specificity to win the base :hover styles
+                                          borderColor: theme.vars.palette.primary[400],
+                                        },
+                                      }),
+                                    }),
+                                  }),
+                                }}
+                              /></center>
+                            </Sheet>
+                          ))}
+                        </RadioGroup>
+                      </Box>
+
+                      Proceed to move selected message(s)?<br></br>
+                      <b>{this.state.SelectedList.length}</b> message(s) selected.<br></br>
                     </ModalBody>
                     <ModalFooter>
-                      <Button color="primary" onClick={() => { this.toggleexport(); this.Transfer_to_main(this.state.SelectedList); }} >Export</Button>
+                      <Button color="primary" onClick={() => { 
+                          this.toggleexport();
+                          this.Transfer_to_dest(this.state.SelectedList, this.state.SelectedDestQueue); 
+                        }} >Export</Button>
                       <div style={{ width: "0px" }}></div>
                       <Button color="secondary" onClick={this.toggleexport}>Cancel</Button>
                     </ModalFooter>
@@ -557,11 +644,6 @@ export default class SQSMessagesList extends React.Component {
               </Card>
             </div>
 
-
-
-            <div>
-
-            </div>
             <br></br>
 
             <div className="row">

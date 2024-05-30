@@ -38,8 +38,8 @@ Shows the number of messages (from the first 10 messages) for every unique value
 
 ### First 10 Messages - Table & Buttons
 
-The body and attributes of the first 10 messages from the queue are displayed in a table here. There are checkboxes available for every message row to perform bulk operations. The message body can be viewed using the "View" button and copied using the "Copy" button on the small popup. Just below the table, there are 4 buttons - "Delete", "Purge", "Export to Main", and "Refresh Page". The "Delete" and "Export to Main" buttons work in conjunction with the checkboxes. The "Purge" button will delete all messages from the queue, and the "Refresh Page" is to simply reload the page.\
-The "Delete", "Purge", and "Export to Main" buttons are tied to a confirmation popup before performing the operation to prevent accidents.
+The body and attributes of the first 10 messages from the queue are displayed in a table here. There are checkboxes available for every message row to perform bulk operations. The message body can be viewed using the "View" button and copied using the "Copy" button on the small popup. Just below the table, there are 4 buttons - "Delete", "Purge", "Export", and "Refresh Page". The "Delete" and "Export" buttons work in conjunction with the checkboxes. The "Purge" button will delete all messages from the queue, and the "Refresh Page" is to simply reload the page.\
+The "Delete", "Purge", and "Export" buttons are tied to a confirmation popup before performing the operation to prevent accidents.
 
 # Code Setup
 
