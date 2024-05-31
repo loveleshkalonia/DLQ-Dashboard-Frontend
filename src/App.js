@@ -110,8 +110,10 @@ function App() {
                   OnClickActions={
 
                     function (evt, item, data) {
-                      queueNameFun(data.config._config.data.datasets[0].data[item[0].index].name);
-                      queueMsgCountFun(data.config._config.data.datasets[0].data[item[0].index].approxMsgCount)
+                      if ( item[0] !== undefined ) { // This if statement is added so that the React App doesn't throw error when clicking on the Blank Area of MainPageChart1
+                        queueNameFun(data.config._config.data.datasets[0].data[item[0].index].name);
+                        queueMsgCountFun(data.config._config.data.datasets[0].data[item[0].index].approxMsgCount)  
+                      }
                     }
 
                   }
