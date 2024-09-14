@@ -62,3 +62,11 @@ ___
 
 This code is my first attempt at Frontend development and React. It is very likely that this code is not up to the best coding standards and practices. Also, this code has never seen deployment, you may or may not encounter issues during deployment.\
 I am open to receiving feedback/suggestions to polish this code further and learn more.
+
+___
+
+### Supporting links:
+
+[Blog Article](https://www.loveleshkalonia.com/2024/06/dlq-dashboard-using-react-js-and-mulesoft.html)
+
+[Demo Video](https://www.youtube.com/watch?v=4r01T9vfdx8)
